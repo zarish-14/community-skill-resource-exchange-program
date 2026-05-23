@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillShare — Community Exchange</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    /* ── VARIABLES ─────────────────────────────────────────── */
+    :root {
+      --bg:       #0f1117;
+      --surface:  #181c27;
+      --surface2: #1e2336;
+      --border:   #2a2f45;
+      --accent:   #4ade80;
+      --accent2:  #facc15;
+      --accent3:  #60a5fa;
+      --text:     #e8eaf0;
+      --muted:    #7a8099;
+      --danger:   #f87171;
+      --radius:   14px;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    /* ── RESET ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      min-height: 100vh;
+    }
+    a { color: var(--accent3); text-decoration: none; }
+    button { cursor: pointer; font-family: var(--font-body); }
+    input, textarea, select {
+      font-family: var(--font-body);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      width: 100%;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+
+    /* ── LAYOUT ────────────────────────────────────────────── */
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── NAVBAR ────────────────────────────────────────────── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      height: 64px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo {
+      font-family: var(--font-head);
+      font-size: 22px; font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--accent2); }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links button {
+      background: none; border: none; color: var(--muted);
+      padding: 8px 14px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      transition: background .15s, color .15s;
+    }
+    .nav-links button:hover,
+    .nav-links button.active { background: var(--surface2); color: var(--text); }
+    .nav-links button.active { color: var(--accent); }
+    .nav-right { display: flex; gap: 10px; align-items: center; }
+    #user-info { font-size: 13px; color: var(--muted); }
+    #user-info strong { color: var(--accent); }
+
+    /* ── BUTTONS ───────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 20px; border-radius: 8px; border: none;
+      font-size: 14px; font-weight: 500;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:hover { opacity: .88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary   { background: var(--accent);   color: #0f1117; font-weight: 700; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger    { background: var(--danger);   color: #fff; }
+    .btn-ghost     { background: none; color: var(--muted); border: 1px solid var(--border); }
+    .btn-sm { padding: 6px 13px; font-size: 13px; }
+
+    /* ── PAGES ─────────────────────────────────────────────── */
+    .page { display: none; padding: 36px 32px; max-width: 1100px; margin: 0 auto; width: 100%; }
+    .page.active { display: block; }
+
+    /* ── PAGE HEADER ───────────────────────────────────────── */
+    .page-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 28px; gap: 16px;
+    }
+    .page-header h1 {
+      font-family: var(--font-head); font-size: 30px; font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .page-header p { color: var(--muted); margin-top: 4px; font-size: 14px; }
+
+    /* ── CARDS GRID ────────────────────────────────────────── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 18px; margin-top: 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: border-color .2s, transform .15s;
+      animation: fadeIn .3s ease both;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .card-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
+    .card-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .card-desc { font-size: 14px; color: var(--muted); margin: 10px 0; line-height: 1.6; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── BADGES ────────────────────────────────────────────── */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+    .badge-green  { background: #14532d44; color: var(--accent); border: 1px solid #14532d; }
+    .badge-yellow { background: #71390444; color: var(--accent2); border: 1px solid #713904; }
+    .badge-blue   { background: #1e3a5f44; color: var(--accent3); border: 1px solid #1e3a5f; }
+    .badge-red    { background: #7f1d1d44; color: var(--danger);  border: 1px solid #7f1d1d; }
+    .badge-gray   { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── SEARCH BAR ────────────────────────────────────────── */
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .search-bar input  { max-width: 320px; }
+    .search-bar select { max-width: 180px; }
+
+    /* ── MODAL ─────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: #000a; z-index: 200;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+      width: 100%; max-width: 480px;
+      animation: fadeIn .2s ease;
+    }
+    .modal h2 { font-family: var(--font-head); font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+    /* ── STATS ROW ─────────────────────────────────────────── */
+    .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 24px; flex: 1; min-width: 130px;
+    }
+    .stat-card .number { font-family: var(--font-head); font-size: 32px; font-weight: 800; }
+    .stat-card .label  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .stat-card.green .number { color: var(--accent); }
+    .stat-card.yellow .number { color: var(--accent2); }
+    .stat-card.blue .number  { color: var(--accent3); }
+
+    /* ── AUTH FORMS ────────────────────────────────────────── */
+    .auth-wrap {
+      display: flex; align-items: center; justify-content: center;
+      min-height: calc(100vh - 64px);
+    }
+    .auth-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 36px; width: 100%; max-width: 420px;
+    }
+    .auth-box h2 { font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+    .auth-box p  { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+    .auth-switch { text-align: center; margin-top: 18px; font-size: 13px; color: var(--muted); }
+    .auth-switch button { background: none; border: none; color: var(--accent); font-size: 13px; padding: 0; }
+
+    /* ── TOAST ─────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 12px 20px; border-radius: 10px;
+      font-size: 14px; z-index: 300; opacity: 0;
+      transition: opacity .25s; pointer-events: none;
+    }
+    #toast.show { opacity: 1; }
+    #toast.success { border-color: var(--accent); color: var(--accent); }
+    #toast.error   { border-color: var(--danger); color: var(--danger); }
+
+    /* ── EMPTY STATE ───────────────────────────────────────── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty p { font-size: 15px; }
+
+    /* ── STAR RATING ───────────────────────────────────────── */
+    .stars { color: var(--accent2); letter-spacing: 2px; }
+
+    /* ── TABS ──────────────────────────────────────────────── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+    .tab-btn {
+      padding: 8px 16px; border: none; background: none;
+      color: var(--muted); border-radius: 8px; font-size: 14px;
+      transition: background .15s, color .15s;
+    }
+    .tab-btn.active { background: var(--surface2); color: var(--accent); font-weight: 600; }
+    .tab-btn:hover  { background: var(--surface2); color: var(--text); }
+
+    /* ── HERO ──────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--surface) 60%, #1a2540);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 48px 40px; margin-bottom: 32px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; right: -60px; top: -60px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, #4ade8011 0%, transparent 70%);
+    }
+    .hero h1 { font-family: var(--font-head); font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); margin: 14px 0 24px; font-size: 16px; max-width: 480px; line-height: 1.6; }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* ── NOTIFICATION BELL ─────────────────────────────────── */
+    .notif-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 8px 12px;
+      font-size: 18px; position: relative;
+    }
+    .notif-badge {
+      position: absolute; top: -4px; right: -4px;
+      background: var(--danger); color: #fff; border-radius: 50%;
+      width: 17px; height: 17px; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── SCROLLBAR ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-logo">Skill<span>Share</span></div>
+    <div class="nav-links" id="nav-links">
+      <button onclick="showPage('home')" class="active" data-page="home">🏠 Home</button>
+      <button onclick="showPage('skills')" data-page="skills">🎓 Skills</button>
+      <button onclick="showPage('resources')" data-page="resources">📦 Resources</button>
+      <button onclick="showPage('requests')" data-page="requests">📋 Requests</button>
+      <button onclick="showPage('reviews')" data-page="reviews">⭐ Reviews</button>
+      <button onclick="showPage('users')" data-page="users">👥 Users</button>
+    </div>
+    <div class="nav-right">
+      <div id="user-info"></div>
+      <button class="notif-btn" onclick="showPage('notifications')" title="Notifications">
+        🔔 <span class="notif-badge" id="notif-count" style="display:none">0</span>
+      </button>
+      <button class="btn btn-secondary btn-sm" id="auth-btn" onclick="showAuth()">Login</button>
+    </div>
+  </nav>
+
+  <!-- ═══ HOME ═══════════════════════════════════════════════ -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <h1>Share Skills,<br><span>Build Community</span></h1>
+      <p>Connect with neighbours to exchange skills, borrow tools, share books — and build a stronger local community together.</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" onclick="showPage('skills')">Browse Skills</button>
+        <button class="btn btn-secondary" onclick="showPage('resources')">View Resources</button>
+      </div>
+    </div>
+    <div class="stats-row" id="home-stats"></div>
+    <h2 style="font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:16px;">Latest Skills</h2>
+    <div class="cards-grid" id="home-skills"></div>
+  </div>
+
+  <!-- ═══ SKILLS ══════════════════════════════════════════════ -->
+  <div class="page" id="page-skills">
+    <div class="page-header">
+      <div>
+        <h1>Skills</h1>
+        <p>Browse skills shared by community members</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-skill')">+ Post Skill</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="skill-search" placeholder="Search skills…" oninput="loadSkills()" />
+      <select id="skill-cat-filter" onchange="loadSkills()">
+        <option value="">All Categories</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="skills-list"></div>
+  </div>
+
+  <!-- ═══ RESOURCES ════════════════════════════════════════════ -->
+  <div class="page" id="page-resources">
+    <div class="page-header">
+      <div>
+        <h1>Resources</h1>
+        <p>Borrow, donate, or share items in your area</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-resource')">+ List Resource</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="res-search" placeholder="Search resources…" oninput="loadResources()" />
+      <select id="res-type-filter" onchange="loadResources()">
+        <option value="">All Types</option>
+        <option value="borrow">Borrow</option>
+        <option value="donate">Donate</option>
+        <option value="sell">Sell</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="resources-list"></div>
+  </div>
+
+  <!-- ═══ REQUESTS ════════════════════════════════════════════ -->
+  <div class="page" id="page-requests">
+    <div class="page-header">
+      <div>
+        <h1>Requests</h1>
+        <p>Track service and resource requests</p>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="filterRequests('all', this)">All</button>
+      <button class="tab-btn" onclick="filterRequests('pending', this)">Pending</button>
+      <button class="tab-btn" onclick="filterRequests('accepted', this)">Accepted</button>
+      <button class="tab-btn" onclick="filterRequests('completed', this)">Completed</button>
+    </div>
+    <div class="cards-grid" id="requests-list"></div>
+  </div>
+
+  <!-- ═══ REVIEWS ══════════════════════════════════════════════ -->
+  <div class="page" id="page-reviews">
+    <div class="page-header">
+      <div>
+        <h1>Reviews</h1>
+        <p>Community feedback and ratings</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-review')">+ Leave Review</button>
+    </div>
+    <div class="search-bar">
+      <input type="number" id="review-uid" placeholder="Enter User ID to view reviews…" style="max-width:280px" />
+      <button class="btn btn-secondary" onclick="loadReviewsForUser()">Search</button>
+    </div>
+    <div class="cards-grid" id="reviews-list"></div>
+  </div>
+
+  <!-- ═══ USERS ════════════════════════════════════════════════ -->
+  <div class="page" id="page-users">
+    <div class="page-header">
+      <div>
+        <h1>Community Members</h1>
+        <p>People sharing skills and resources</p>
+      </div>
+      <button class="btn btn-primary" onclick="showAuth('register')">Join Community</button>
+    </div>
+    <div class="cards-grid" id="users-list"></div>
+  </div>
+
+  <!-- ═══ NOTIFICATIONS ════════════════════════════════════════ -->
+  <div class="page" id="page-notifications">
+    <div class="page-header">
+      <div><h1>Notifications</h1><p>Your recent activity updates</p></div>
+    </div>
+    <div id="notif-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODALS                                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="modal-auth">
+  <div class="modal">
+    <div id="auth-login">
+      <h2>Welcome Back</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">Sign in to your account</p>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modal-auth')">Cancel</button>
+        <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
+      </div>
+      <div class="auth-switch">Don't have an account? <button onclick="toggleAuth('register')">Register</button></div>
+    </div>
+    <div id="auth-register" style="display:none">
+      <h2>Join SkillShare</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">Create your community account</p>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Ali Hassan" /></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="reg-phone" placeholder="+92-300-…" /></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-pass" placeholder="Min 8 characters" /></div>
+      <div class="form-group"><label>Bio</label><textarea id="reg-bio" rows="2" placeholder="Tell us a bit about yourself…"></textarea></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modal-auth')">Cancel</button>
+        <button class="btn btn-primary" onclick="doRegister()">Create Account</button>
+      </div>
+      <div class="auth-switch">Already have an account? <button onclick="toggleAuth('login')">Sign in</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- POST SKILL MODAL -->
+<div class="modal-overlay" id="modal-skill">
+  <div class="modal">
+    <h2>Post a Skill</h2>
+    <div class="form-group"><label>Skill Title *</label><input type="text" id="sk-title" placeholder="e.g. Math Tutoring, Laptop Repair…" /></div>
+    <div class="form-group"><label>Category</label>
+      <select id="sk-category"><option value="">Select category…</option></select>
+    </div>
+    <div class="form-group"><label>Description</label><textarea id="sk-desc" rows="3" placeholder="Describe what you offer…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Price Type</label>
+        <select id="sk-price-type" onchange="togglePrice()">
+          <option value="free">Free</option>
+          <option value="paid">Paid</option>
+          <option value="barter">Barter</option>
+        </select>
+      </div>
+      <div class="form-group" id="price-group" style="display:none">
+        <label>Price (PKR)</label>
+        <input type="number" id="sk-price" placeholder="500" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-skill')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitSkill()">Post Skill</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIST RESOURCE MODAL -->
+<div class="modal-overlay" id="modal-resource">
+  <div class="modal">
+    <h2>List a Resource</h2>
+    <div class="form-group"><label>Item Title *</label><input type="text" id="res-title" placeholder="e.g. Power Drill, Chemistry Textbook…" /></div>
+    <div class="form-group"><label>Category</label>
+      <select id="res-category"><option value="">Select category…</option></select>
+    </div>
+    <div class="form-group"><label>Description</label><textarea id="res-desc" rows="2" placeholder="Describe the item…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Condition</label>
+        <select id="res-condition">
+          <option value="new">New</option>
+          <option value="good" selected>Good</option>
+          <option value="fair">Fair</option>
+          <option value="poor">Poor</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Share Type</label>
+        <select id="res-share-type">
+          <option value="borrow">Borrow</option>
+          <option value="donate">Donate</option>
+          <option value="sell">Sell</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-resource')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitResource()">List Resource</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT REQUEST MODAL -->
+<div class="modal-overlay" id="modal-request">
+  <div class="modal">
+    <h2 id="req-modal-title">Send Request</h2>
+    <input type="hidden" id="req-skill-id" />
+    <input type="hidden" id="req-resource-id" />
+    <div class="form-group"><label>Your Message</label>
+      <textarea id="req-message" rows="4" placeholder="Hi! I'd like to request this…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-request')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitRequest()">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAVE REVIEW MODAL -->
+<div class="modal-overlay" id="modal-review">
+  <div class="modal">
+    <h2>Leave a Review</h2>
+    <div class="form-group"><label>User ID to Review</label><input type="number" id="rv-reviewee" placeholder="Enter user ID" /></div>
+    <div class="form-group">
+      <label>Rating</label>
+      <select id="rv-rating">
+        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+        <option value="4">⭐⭐⭐⭐ Good</option>
+        <option value="3">⭐⭐⭐ Average</option>
+        <option value="2">⭐⭐ Below Average</option>
+        <option value="1">⭐ Poor</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Comment</label><textarea id="rv-comment" rows="3" placeholder="Share your experience…"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-review')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SKILL MODAL -->
+<div class="modal-overlay" id="modal-edit-skill">
+  <div class="modal">
+    <h2>Edit Skill</h2>
+    <input type="hidden" id="edit-sk-id" />
+    <div class="form-group"><label>Title</label><input type="text" id="edit-sk-title" /></div>
+    <div class="form-group"><label>Description</label><textarea id="edit-sk-desc" rows="3"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Price Type</label>
+        <select id="edit-sk-price-type">
+          <option value="free">Free</option><option value="paid">Paid</option><option value="barter">Barter</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Price (PKR)</label><input type="number" id="edit-sk-price" /></div>
+    </div>
+    <div class="form-group"><label>Available</label>
+      <select id="edit-sk-avail"><option value="true">Yes</option><option value="false">No</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-skill')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateSkill()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const API = window.location.origin + '/api';
+let currentUser = JSON.parse(localStorage.getItem('skillshare_user') || 'null');
+let categories  = [];
+let allRequests = [];
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `show ${type}`;
+  setTimeout(() => el.className = '', 2800);
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === name);
+  });
+  if (name === 'skills')        loadSkills();
+  if (name === 'resources')     loadResources();
+  if (name === 'requests')      loadRequests();
+  if (name === 'users')         loadUsers();
+  if (name === 'notifications') loadNotifications();
+}
+
+function stars(n) { return '⭐'.repeat(n) + '☆'.repeat(5 - n); }
+
+function priceBadge(type, price) {
+  if (type === 'free')   return '<span class="badge badge-green">Free</span>';
+  if (type === 'barter') return '<span class="badge badge-blue">Barter</span>';
+  return `<span class="badge badge-yellow">PKR ${price}</span>`;
+}
+
+function statusBadge(s) {
+  const map = { pending:'badge-yellow', accepted:'badge-blue', completed:'badge-green', rejected:'badge-red', cancelled:'badge-gray' };
+  return `<span class="badge ${map[s] || 'badge-gray'}">${s}</span>`;
+}
+
+async function apiFetch(url, opts = {}) {
+  try {
+    const res  = await fetch(API + url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════
+function updateUserUI() {
+  const info = document.getElementById('user-info');
+  const btn  = document.getElementById('auth-btn');
+  if (currentUser) {
+    info.innerHTML = `Logged in as <strong>${currentUser.name}</strong>`;
+    btn.textContent = 'Logout';
+    btn.onclick = doLogout;
+  } else {
+    info.innerHTML = '';
+    btn.textContent = 'Login';
+    btn.onclick = () => showAuth();
+  }
+}
+
+function showAuth(mode = 'login') { openModal('modal-auth'); toggleAuth(mode); }
+function toggleAuth(mode) {
+  document.getElementById('auth-login').style.display    = mode === 'login'    ? 'block' : 'none';
+  document.getElementById('auth-register').style.display = mode === 'register' ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-pass').value;
+  if (!email || !password) return toast('Fill in all fields', 'error');
+  try {
+    const data = await apiFetch('/users/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    currentUser = data.user;
+    localStorage.setItem('skillshare_user', JSON.stringify(currentUser));
+    closeModal('modal-auth');
+    updateUserUI();
+    toast(`Welcome back, ${currentUser.name}!`);
+    loadHome();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const phone = document.getElementById('reg-phone').value.trim();
+  const bio   = document.getElementById('reg-bio').value.trim();
+  if (!name || !email || !pass) return toast('Name, email and password required', 'error');
+  try {
+    const data = await apiFetch('/users/register', { method: 'POST', body: JSON.stringify({ name, email, password: pass, phone, bio }) });
+    currentUser = data.user;
+    localStorage.setItem('skillshare_user', JSON.stringify(currentUser));
+    closeModal('modal-auth');
+    updateUserUI();
+    toast('Account created! Welcome to SkillShare 🎉');
+    loadHome();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('skillshare_user');
+  updateUserUI();
+  toast('Logged out.');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORIES
+// ═══════════════════════════════════════════════════════════
+async function loadCategories() {
+  try {
+    categories = await apiFetch('/categories');
+    ['sk-category','res-category','skill-cat-filter'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const isFilter = id === 'skill-cat-filter';
+      if (isFilter) el.innerHTML = '<option value="">All Categories</option>';
+      else          el.innerHTML = '<option value="">Select category…</option>';
+      categories.forEach(c => {
+        el.innerHTML += `<option value="${c.category_id}">${c.icon || ''} ${c.name}</option>`;
+      });
+    });
+  } catch (e) { console.warn('Categories not loaded:', e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════════════════
+async function loadHome() {
+  try {
+    const [skills, resources, requests, users] = await Promise.all([
+      apiFetch('/skills?available=true'),
+      apiFetch('/resources'),
+      apiFetch('/requests'),
+      apiFetch('/users')
+    ]);
+
+    document.getElementById('home-stats').innerHTML = `
+      <div class="stat-card green"><div class="number">${skills.length}</div><div class="label">Skills Shared</div></div>
+      <div class="stat-card yellow"><div class="number">${resources.length}</div><div class="label">Resources Listed</div></div>
+      <div class="stat-card blue"><div class="number">${requests.length}</div><div class="label">Requests Made</div></div>
+      <div class="stat-card"><div class="number">${users.length}</div><div class="label">Members</div></div>
+    `;
+
+    const latest = skills.slice(0, 6);
+    document.getElementById('home-skills').innerHTML = latest.length
+      ? latest.map(s => skillCard(s, true)).join('')
+      : '<div class="empty"><div class="icon">🎓</div><p>No skills posted yet</p></div>';
+  } catch (e) {
+    document.getElementById('home-stats').innerHTML = '<p style="color:var(--muted)">Connect the backend to see live stats.</p>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SKILLS
+// ═══════════════════════════════════════════════════════════
+function skillCard(s, compact = false) {
+  const mine = currentUser && currentUser.user_id === s.user_id;
+  return `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${s.title}</div>
+          <div class="card-meta">by ${s.provider_name || 'User #' + s.user_id} · ${s.category_icon || ''} ${s.category_name || 'General'}</div>
+        </div>
+        ${priceBadge(s.price_type, s.price)}
+      </div>
+      ${s.description ? `<div class="card-desc">${s.description}</div>` : ''}
+      <div class="card-footer">
+        <span class="badge ${s.is_available ? 'badge-green' : 'badge-red'}">${s.is_available ? 'Available' : 'Unavailable'}</span>
+        <div class="card-actions">
+          ${!mine && s.is_available ? `<button class="btn btn-primary btn-sm" onclick="openRequest('skill',${s.skill_id},'${s.title}')">Request</button>` : ''}
+          ${mine ? `
+            <button class="btn btn-secondary btn-sm" onclick="openEditSkill(${JSON.stringify(s).replace(/"/g,'&quot;')})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSkill(${s.skill_id})">Delete</button>
+          ` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function loadSkills() {
+  const search = document.getElementById('skill-search')?.value || '';
+  const cat    = document.getElementById('skill-cat-filter')?.value || '';
+  let url = '/skills?available=true';
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (cat)    url += `&category=${cat}`;
+  try {
+    const skills = await apiFetch(url);
+    document.getElementById('skills-list').innerHTML = skills.length
+      ? skills.map(s => skillCard(s)).join('')
+      : '<div class="empty"><div class="icon">🎓</div><p>No skills found</p></div>';
+  } catch (e) { document.getElementById('skills-list').innerHTML = `<p style="color:var(--muted)">${e.message}</p>`; }
+}
+
+function togglePrice() {
+  document.getElementById('price-group').style.display =
+    document.getElementById('sk-price-type').value === 'paid' ? 'block' : 'none';
+}
+
+async function submitSkill() {
+  if (!currentUser) return toast('Please login first', 'error');
+  const title      = document.getElementById('sk-title').value.trim();
+  const category_id = document.getElementById('sk-category').value;
+  const description = document.getElementById('sk-desc').value.trim();
+  const price_type  = document.getElementById('sk-price-type').value;
+  const price       = document.getElementById('sk-price').value;
+  if (!title) return toast('Title is required', 'error');
+  try {
+    await apiFetch('/skills', { method: 'POST', body: JSON.stringify({
+      user_id: currentUser.user_id, category_id: category_id || null,
+      title, description, price_type, price: price || 0
+    })});
+    closeModal('modal-skill');
+    toast('Skill posted successfully!');
+    loadSkills();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function openEditSkill(s) {
+  document.getElementById('edit-sk-id').value         = s.skill_id;
+  document.getElementById('edit-sk-title').value      = s.title;
+  document.getElementById('edit-sk-desc').value       = s.description || '';
+  document.getElementById('edit-sk-price-type').value = s.price_type;
+  document.getElementById('edit-sk-price').value      = s.price;
+  document.getElementById('edit-sk-avail').value      = s.is_available ? 'true' : 'false';
+  openModal('modal-edit-skill');
+}
+
+async function updateSkill() {
+  const id = document.getElementById('edit-sk-id').value;
+  try {
+    await apiFetch(`/skills/${id}`, { method: 'PUT', body: JSON.stringify({
+      title:       document.getElementById('edit-sk-title').value,
+      description: document.getElementById('edit-sk-desc').value,
+      price_type:  document.getElementById('edit-sk-price-type').value,
+      price:       document.getElementById('edit-sk-price').value,
+      is_available: document.getElementById('edit-sk-avail').value === 'true'
+    })});
+    closeModal('modal-edit-skill');
+    toast('Skill updated!');
+    loadSkills();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteSkill(id) {
+  if (!confirm('Delete this skill?')) return;
+  try {
+    await apiFetch(`/skills/${id}`, { method: 'DELETE' });
+    toast('Skill deleted.');
+    loadSkills();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// RESOURCES
+// ═══════════════════════════════════════════════════════════
+function resourceCard(r) {
+  const mine = currentUser && currentUser.user_id === r.user_id;
+  const typeColors = { borrow: 'badge-blue', donate: 'badge-green', sell: 'badge-yellow' };
+  return `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${r.title}</div>
+          <div class="card-meta">by ${r.owner_name} · ${r.icon || ''} ${r.category_name || 'General'}</div>
+        </div>
+        <span class="badge ${typeColors[r.share_type]}">${r.share_type}</span>
+      </div>
+      ${r.description ? `<div class="card-desc">${r.description}</div>` : ''}
+      <div class="card-footer">
+        <span class="badge badge-gray">Condition: ${r.condition}</span>
+        <div class="card-actions">
+          ${!mine ? `<button class="btn btn-primary btn-sm" onclick="openRequest('resource',${r.resource_id},'${r.title}')">Request</button>` : ''}
+          ${mine ? `<button class="btn btn-danger btn-sm" onclick="deleteResource(${r.resource_id})">Delete</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function loadResources() {
+  const search    = document.getElementById('res-search')?.value || '';
+  const shareType = document.getElementById('res-type-filter')?.value || '';
+  let url = '/resources';
+  if (search)    url += `?search=${encodeURIComponent(search)}`;
+  if (shareType) url += `${search ? '&' : '?'}share_type=${shareType}`;
+  try {
+    const items = await apiFetch(url);
+    document.getElementById('resources-list').innerHTML = items.length
+      ? items.map(r => resourceCard(r)).join('')
+      : '<div class="empty"><div class="icon">📦</div><p>No resources listed yet</p></div>';
+  } catch (e) { document.getElementById('resources-list').innerHTML = `<p style="color:var(--muted)">${e.message}</p>`; }
+}
+
+async function submitResource() {
+  if (!currentUser) return toast('Please login first', 'error');
+  const title      = document.getElementById('res-title').value.trim();
+  const category_id = document.getElementById('res-category').value;
+  const description = document.getElementById('res-desc').value.trim();
+  const condition  = document.getElementById('res-condition').value;
+  const share_type = document.getElementById('res-share-type').value;
+  if (!title) return toast('Title is required', 'error');
+  try {
+    await apiFetch('/resources', { method: 'POST', body: JSON.stringify({
+      user_id: currentUser.user_id, category_id: category_id || null,
+      title, description, condition, share_type
+    })});
+    closeModal('modal-resource');
+    toast('Resource listed!');
+    loadResources();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteResource(id) {
+  if (!confirm('Delete this resource?')) return;
+  try {
+    await apiFetch(`/resources/${id}`, { method: 'DELETE' });
+    toast('Resource deleted.');
+    loadResources();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// REQUESTS
+// ═══════════════════════════════════════════════════════════
+function openRequest(type, id, title) {
+  if (!currentUser) return toast('Please login to send requests', 'error');
+  document.getElementById('req-modal-title').textContent = `Request: ${title}`;
+  document.getElementById('req-skill-id').value    = type === 'skill'    ? id : '';
+  document.getElementById('req-resource-id').value = type === 'resource' ? id : '';
+  openModal('modal-request');
+}
+
+async function submitRequest() {
+  const skill_id    = document.getElementById('req-skill-id').value;
+  const resource_id = document.getElementById('req-resource-id').value;
+  const message     = document.getElementById('req-message').value.trim();
+  try {
+    await apiFetch('/requests', { method: 'POST', body: JSON.stringify({
+      requester_id: currentUser.user_id,
+      skill_id:    skill_id    || null,
+      resource_id: resource_id || null,
+      message
+    })});
+    closeModal('modal-request');
+    toast('Request sent!');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function loadRequests(statusFilter = '') {
+  let url = '/requests';
+  if (currentUser) url += `?user_id=${currentUser.user_id}`;
+  try {
+    allRequests = await apiFetch(url);
+    renderRequests(statusFilter);
+  } catch (e) { document.getElementById('requests-list').innerHTML = `<p style="color:var(--muted)">${e.message}</p>`; }
+}
+
+function renderRequests(statusFilter = '') {
+  const filtered = statusFilter && statusFilter !== 'all'
+    ? allRequests.filter(r => r.status === statusFilter)
+    : allRequests;
+  document.getElementById('requests-list').innerHTML = filtered.length
+    ? filtered.map(r => `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">${r.skill_title || r.resource_title || 'Request'}</div>
+              <div class="card-meta">by ${r.requester_name} · ${new Date(r.requested_at).toLocaleDateString()}</div>
+            </div>
+            ${statusBadge(r.status)}
+          </div>
+          ${r.message ? `<div class="card-desc">"${r.message}"</div>` : ''}
+          <div class="card-footer">
+            <div class="card-actions">
+              ${r.status === 'pending' ? `
+                <button class="btn btn-primary btn-sm" onclick="updateRequest(${r.request_id},'accepted')">Accept</button>
+                <button class="btn btn-danger btn-sm"  onclick="updateRequest(${r.request_id},'rejected')">Reject</button>
+              ` : ''}
+              ${r.status === 'accepted' ? `
+                <button class="btn btn-secondary btn-sm" onclick="updateRequest(${r.request_id},'completed')">Mark Complete</button>
+              ` : ''}
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="deleteRequest(${r.request_id})">Cancel</button>
+          </div>
+        </div>`).join('')
+    : '<div class="empty"><div class="icon">📋</div><p>No requests found</p></div>';
+}
+
+function filterRequests(status, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRequests(status);
+}
+
+async function updateRequest(id, status) {
+  try {
+    await apiFetch(`/requests/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
+    toast(`Request ${status}!`);
+    loadRequests();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteRequest(id) {
+  if (!confirm('Cancel this request?')) return;
+  try {
+    await apiFetch(`/requests/${id}`, { method: 'DELETE' });
+    toast('Request cancelled.');
+    loadRequests();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// REVIEWS
+// ═══════════════════════════════════════════════════════════
+async function loadReviewsForUser() {
+  const uid = document.getElementById('review-uid').value;
+  if (!uid) return toast('Enter a user ID', 'error');
+  try {
+    const reviews = await apiFetch(`/reviews/user/${uid}`);
+    document.getElementById('reviews-list').innerHTML = reviews.length
+      ? reviews.map(r => `
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">${stars(r.rating)} (${r.rating}/5)</div>
+                <div class="card-meta">by ${r.reviewer_name} · ${new Date(r.created_at).toLocaleDateString()}</div>
+              </div>
+            </div>
+            ${r.comment ? `<div class="card-desc">"${r.comment}"</div>` : ''}
+          </div>`).join('')
+      : '<div class="empty"><div class="icon">⭐</div><p>No reviews yet for this user</p></div>';
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function submitReview() {
+  if (!currentUser) return toast('Please login first', 'error');
+  const reviewee_id = document.getElementById('rv-reviewee').value;
+  const rating      = document.getElementById('rv-rating').value;
+  const comment     = document.getElementById('rv-comment').value.trim();
+  if (!reviewee_id) return toast('Enter user ID to review', 'error');
+  try {
+    await apiFetch('/reviews', { method: 'POST', body: JSON.stringify({
+      reviewer_id: currentUser.user_id, reviewee_id, rating, comment
+    })});
+    closeModal('modal-review');
+    toast('Review submitted!');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════════════════════
+async function loadUsers() {
+  try {
+    const users = await apiFetch('/users');
+    document.getElementById('users-list').innerHTML = users.length
+      ? users.map(u => `
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">👤 ${u.name}</div>
+                <div class="card-meta">${u.email} ${u.phone ? '· ' + u.phone : ''}</div>
+              </div>
+              <span class="badge ${u.is_active ? 'badge-green' : 'badge-red'}">${u.is_active ? 'Active' : 'Inactive'}</span>
+            </div>
+            ${u.bio ? `<div class="card-desc">${u.bio}</div>` : ''}
+            <div class="card-footer">
+              <span style="font-size:12px;color:var(--muted)">Joined ${new Date(u.created_at).toLocaleDateString()}</span>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('review-uid').value=${u.user_id};showPage('reviews');loadReviewsForUser()">View Reviews</button>
+            </div>
+          </div>`).join('')
+      : '<div class="empty"><div class="icon">👥</div><p>No members yet</p></div>';
+  } catch (e) { document.getElementById('users-list').innerHTML = `<p style="color:var(--muted)">${e.message}</p>`; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════
+async function loadNotifications() {
+  if (!currentUser) {
+    document.getElementById('notif-list').innerHTML = '<p style="color:var(--muted)">Login to see notifications.</p>';
+    return;
+  }
+  try {
+    const notifs = await apiFetch(`/notifications/${currentUser.user_id}`);
+    const unread = notifs.filter(n => !n.is_read).length;
+    const badge  = document.getElementById('notif-count');
+    if (unread > 0) { badge.style.display = 'flex'; badge.textContent = unread; }
+    else            { badge.style.display = 'none'; }
+
+    document.getElementById('notif-list').innerHTML = notifs.length
+      ? notifs.map(n => `
+          <div class="card" style="${!n.is_read ? 'border-color:var(--accent3)' : ''}">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:14px;font-weight:500">${n.message}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">${new Date(n.created_at).toLocaleString()}</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                ${!n.is_read ? `<button class="btn btn-secondary btn-sm" onclick="markRead(${n.notif_id})">Mark Read</button>` : ''}
+                <button class="btn btn-ghost btn-sm" onclick="deleteNotif(${n.notif_id})">✕</button>
+              </div>
+            </div>
+          </div>`).join('')
+      : '<div class="empty"><div class="icon">🔔</div><p>No notifications</p></div>';
+  } catch (e) { console.warn(e); }
+}
+
+async function markRead(id) {
+  try { await apiFetch(`/notifications/${id}/read`, { method: 'PUT' }); loadNotifications(); }
+  catch (e) { toast(e.message, 'error'); }
+}
+async function deleteNotif(id) {
+  try { await apiFetch(`/notifications/${id}`, { method: 'DELETE' }); loadNotifications(); }
+  catch (e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+async function init() {
+  updateUserUI();
+  await loadCategories();
+  await loadHome();
+}
+
+init();
+</script>
+</body>
+</html>
